@@ -1,0 +1,25 @@
+# A temporary fix for the "No module named 'object_detection'" error.
+# Some versions of Cython can cause conflicts with the object detection API.
+!pip uninstall Cython -y
+# Clone the TensorFlow Models repository from GitHub.
+!git clone --depth 1 https://github.com/tensorflow/models
+
+# Copy setup files into the models/research folder.
+# This script navigates to the "models/research" directory and compiles .proto files 
+# into Python files for use with the TensorFlow Object Detection API.
+%%bash
+cd models/research/
+# Compile all .proto files in the object_detection/protos directory into Python files.
+protoc object_detection/protos/*.proto --python_out=.
+
+# Modify the setup.py file to target a specific TensorFlow models version (v2.8.0).
+import re
+# Read the original setup.py file from the object_detection directory.
+with open('/content/models/research/object_detection/packages/tf2/setup.py') as f:
+    s = f.read()
+# Replace the TensorFlow models version requirement and save it to a new setup.py file.
+with open('/content/models/research/setup.py', 'w') as f:
+    s = re.sub('tf-models-official>=2.5.1',  
+               'tf-models-official==2.8.0', s)
+    f.write(s)  # Write the updated content to a new setup.py file.
+
